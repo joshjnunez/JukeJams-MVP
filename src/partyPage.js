@@ -1,18 +1,14 @@
 import React from 'react';
 import Queue from './queue.js';
 import VideoPlayer from './videoPlayer.js';
-import { Route, BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 
 const PartyPage = ({
   video,
   userPlaylist,
-  hostPartyClicked,
-  toggleHost,
   dropHostParty,
-  HostParty,
   listClickHandler,
   voteUpdate,
-  clickHostParty,
 }) => {
   return (
     <div>

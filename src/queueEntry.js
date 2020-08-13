@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 
-const QueueEntry = ({ video, listClickHandler, sortPlaylist }) => {
+const QueueEntry = ({ video, listClickHandler }) => {
   const [voteCount, setVoteCount] = useState(0);
   const voteUpUpdate= () => {
     axios.put('http://localhost:3000/vote/', {
@@ -35,7 +35,6 @@ const QueueEntry = ({ video, listClickHandler, sortPlaylist }) => {
           <button
             className="voteUp"
             onClick={() => {
-              // setVoteCount(voteCount + 1);
               voteUpUpdate();
             }
             }
@@ -45,7 +44,6 @@ const QueueEntry = ({ video, listClickHandler, sortPlaylist }) => {
           <button
             className="voteDown"
             onClick={() => {
-              // setVoteCount(voteCount - 1)
               voteDownUpdate();
             }
             }

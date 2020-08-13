@@ -2,7 +2,7 @@ import React from 'react';
 import SearchResults from './searchResults.js';
 import Playlist from './playlist.js';
 import Search from './search.js';
-import { Route, BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 
 const UserPage = ({
   videos,
@@ -12,7 +12,6 @@ const UserPage = ({
   userPlaylist,
   code,
   handleFormChange,
-  handleFormSubmit,
 }) => {
   let playlist;
   if (userPlaylist.length > 0) {

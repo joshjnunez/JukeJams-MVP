@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import UserPage from './userPage.js';
 import PartyPage from './partyPage.js';
-import QueueEntry from './queueEntry.js';
-// import exampleVideoData from '../fakeData.js';
 import GoogleLogin from 'react-google-login';
 import axios from 'axios';
 import { YOUTUBE_API_KEY, OAUTH_CLIENT_ID } from '../config.js';
 import { Route, BrowserRouter, Link } from 'react-router-dom';
-import $ from 'jquery'; 
+import $ from 'jquery';
 class App extends Component {
   constructor(props) {
     super(props);
@@ -34,27 +32,30 @@ class App extends Component {
     this.makeID = this.makeID.bind(this);
   }
 
+  //Toggles the player
   componentDidMount() {
     $('#player').toggle();
   }
-  // Authorization: login
 
+  // Authorization: login
   handleFormChange(event) {
     return this.setState({
       code: event.target.value,
     });
   }
 
+  //Creates our unique access codes
   makeID() {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const charactersLength = characters.length;
-    for (var i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
   }
 
+  //Host party click handler
   clickHostParty() {
     $('#player').toggle();
     player.playVideo();
@@ -64,6 +65,7 @@ class App extends Component {
     this.toggleHost();
   }
 
+  //Drop host party click handler
   dropHostParty() {
     this.setState({
       hostPartyClicked: false,
@@ -75,6 +77,7 @@ class App extends Component {
     );
   }
 
+  //Axios post request to toggle host in db
   toggleHost() {
     const { currentUser, hostPartyClicked } = this.state;
     console.log('Here is the ID:', this.makeID());
@@ -93,6 +96,7 @@ class App extends Component {
       });
     }
   }
+
 
   responseGoogle(response) {
       console.log(response.details)
@@ -194,24 +198,6 @@ class App extends Component {
     }
   }
 
-  // sortPlaylist() {
-  //   const { userPlaylist } = this.state;
-
-  //   const compare = (a, b) => {
-  //     if (a is less than b by some ordering criterion) {
-  //       return -1;
-  //     }
-  //     if (a is greater than b by the ordering criterion) {
-  //       return 1;
-  //     }
-  //     // a must be equal to b
-  //     return 0;
-  //   }
-  //   this.setState({
-  //     userPlaylist: userPlaylist.sort()
-  //   })
-  // }
-
   render() {
     const {
       videos,
@@ -221,7 +207,7 @@ class App extends Component {
       userPlaylist,
       code,
     } = this.state;
-
+    //if hostParty is clicked, render the Party Page
     if (hostPartyClicked) {
       return (
         <PartyPage
@@ -235,6 +221,7 @@ class App extends Component {
         />
       );
     }
+    //If the login is not complete render the google auth again
     if (!loginComplete) {
       return (
         <GoogleLogin
@@ -246,7 +233,7 @@ class App extends Component {
         />
       );
     }
-
+    //Renders the access code route and user sage upon login
     return (
       <div>
         <BrowserRouter>
