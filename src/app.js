@@ -7,7 +7,7 @@ import GoogleLogin from 'react-google-login';
 import axios from 'axios';
 import { YOUTUBE_API_KEY, OAUTH_CLIENT_ID } from '../config.js';
 import { Route, BrowserRouter, Link } from 'react-router-dom';
-import $ from 'jquery';
+import $ from 'jquery'; 
 class App extends Component {
   constructor(props) {
     super(props);
