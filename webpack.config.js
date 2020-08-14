@@ -21,6 +21,68 @@ module.exports = {
           loader: 'babel-loader',
         },
       },
+      {
+        test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000
+        }
+      },
+      {
+        test: /\.css$/,
+        use: [
+          {
+            loader: "style-loader",
+            options: {
+            }
+          },
+          {
+            loader: "css-loader",
+            options: {
+              modules: true
+            }
+          }
+        ]
+      }
     ],
   },
 };
+
+
+// const HtmlWebPackPlugin = require('html-webpack-plugin');
+// const path = require('path');
+// const htmlPlugin = new HtmlWebPackPlugin({
+//   template: './src/index.html',
+//   filename: './index.html',
+// });
+// module.exports = {
+//   entry: './src/index.js',
+//   output: {
+//     // NEW
+//     path: path.join(__dirname, 'dist'),
+//     filename: '[name].js',
+//   }, // NEW Ends
+//   plugins: [htmlPlugin],
+//   module: {
+//     rules: [
+//       {
+//         test: /\.(js|jsx)$/,
+//         exclude: /node_modules/,
+//         use: {
+//           loader: 'babel-loader',
+//         },
+//       },
+//       {
+//         test: /\.css$/,
+//         use: ['style-loader', 'css-loader']
+//       },
+//       {
+//         test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+//         loader: 'url-loader',
+//         options: {
+//           limit: 10000
+//         }
+//       }
+//     ],
+//   },
+// };

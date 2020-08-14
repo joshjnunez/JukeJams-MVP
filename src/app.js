@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Button } from 'react-bootstrap';
 import UserPage from './userPage.js';
 import PartyPage from './partyPage.js';
 import GoogleLogin from 'react-google-login';
