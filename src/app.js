@@ -8,7 +8,7 @@ import { Route, BrowserRouter, Link } from 'react-router-dom';
 import $ from 'jquery';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Button, Jumbotron } from 'react-bootstrap';
+import { Container, Row, Col, Button, Jumbotron, OverlayTrigger, Popover } from 'react-bootstrap';
 // import './App.scss'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -244,17 +244,18 @@ class App extends Component {
       );
     }
     //Renders the access code route and user sage upon login
+    //move title and user name from user page to render so generate access code button isnt floating outside of container
     return (
-      <Container style={{ display: "flex", justifyContent: 'center' }}>
-        <Row>
+      <Container style={{ display: "flex", justifyContent: 'center', border: "8px solid #cecece" }}>
+        <Row style={{ padding: "5px" }}>
           <Col>
-            <h1 style={{ color: "black", backgroundColor: "#ECEBEB", fontFamily: "fantasy", textalign: "center", fontSize: 65, fontWeight: 600, textAlign: "center", padding: "10px 20px" }}>
+            <h1 style={{ color: "black", backgroundColor: "#ECEBEB", fontFamily: "fantasy", textalign: "center", fontSize: 75, fontWeight: 600, textAlign: "center", padding: "30px 20px" }}>
               JUKE JAMS
             </h1>
-            <h2 style={{ textAlign: "center", fontSize: 25 }}>BY {console.log(this.state.currentUser)}</h2>
+            <h2 style={{ textAlign: "center", fontSize: 25 }}>BY {currentUser}</h2>
             <BrowserRouter>
               <Link to={`/${this.makeID()}`}>
-                <Button>GENERATE ACCESS CODE</Button>
+                <Button style={{ fontWeight: "bold" }}>GENERATE ACCESS CODE</Button>
               </Link>
             </BrowserRouter>
             <UserPage
