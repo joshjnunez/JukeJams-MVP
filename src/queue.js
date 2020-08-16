@@ -1,12 +1,12 @@
 import React from 'react';
 import QueueEntry from './queueEntry.js';
 
-const Queue = ({ userPlaylist, listClickHandler }) => {
+const Queue = ({ partyPlaylist, listClickHandler, sortPlaylist, accessCode, userId }) => {
   return (
     <div>
       Queue here:
-      {userPlaylist.map((video) => (
-        <QueueEntry video={video} listClickHandler={listClickHandler} />
+      {partyPlaylist.map((video) => (
+        <QueueEntry video={video} listClickHandler={listClickHandler} sortPlaylist={sortPlaylist} accessCode={accessCode} userId={userId} />
       ))}
     </div>
   );

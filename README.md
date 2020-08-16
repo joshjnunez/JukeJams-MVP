@@ -57,3 +57,5 @@ This project is licensed under the ISC License.
 
 ## Acknowledgments
 Thank you to the staff and our peers at Operation Spark for inspiring us daily. 
+
+[JUKEJAMS logo]()

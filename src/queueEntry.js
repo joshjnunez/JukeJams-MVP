@@ -1,47 +1,47 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { PORT } from '../config.js'
+
+import Button from 'react-bootstrap/Button';
+import Image from "react-bootstrap/Image"
 
 
-const QueueEntry = ({ video, listClickHandler }) => {
+
+const QueueEntry = ({ video, listClickHandler, sortPlaylist, accessCode, userId }) => {
   const [voteCount, setVoteCount] = useState(0);
-  const voteUpUpdate= () => {
-    axios.put('http://localhost:3000/vote/', {
-      // vote: voteCount + 1,
-      title: video.snippet.title,
+  const voteUpdate = (direction) => {
+    axios.put(`http://localhost:${PORT}/vote/`, {
+      userId,
+      url: video.id.videoId,
+      direction,
+      accessCode
     })
     .then(({ data }) => {
-      console.log('this is the response from votes database', data);
-      setVoteCount(data.newVoteCount);
-      window.nextVid = data.highestVote.url;
+      setVoteCount(data.newVoteCount || 0);
     })
   }
-  const voteDownUpdate= () => {
-    axios.put('http://localhost:3000/vote/', {
-      vote: voteCount - 1,
-      title: video.snippet.title,
-    })
-    .then()
-  }
+  // voteUpdate()
   return (
     <div>
       <div>
-        <img src={video.snippet.thumbnails.default.url} onClick={() => listClickHandler(video)}></img>
+        <Image src={video.snippet.thumbnails.default.url} onClick={() => listClickHandler(video)} rounded></Image>
       </div>
       <div>
         <div onClick={() => listClickHandler(video)}>{video.snippet.title}</div>
         <div>{video.snippet.channelTitle}</div>
         <div>{voteCount} votes</div>
         <div>
-          <button
+          <Button
             className="voteUp"
             onClick={() => {
+            // setVoteCount(voteCount + 1);
               voteUpUpdate();
             }
             }
           >
             Up vote
-          </button>
-          <button
+          </Button>
+          <Button
             className="voteDown"
             onClick={() => {
               voteDownUpdate();
@@ -49,7 +49,7 @@ const QueueEntry = ({ video, listClickHandler }) => {
             }
           >
             Down vote
-          </button>
+          </Button>
         </div>
       </div>
     </div>

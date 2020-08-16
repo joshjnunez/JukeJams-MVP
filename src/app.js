@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Button } from 'react-bootstrap';
 import UserPage from './userPage.js';
 import PartyPage from './partyPage.js';
 import GoogleLogin from 'react-google-login';
@@ -7,6 +6,13 @@ import axios from 'axios';
 import { YOUTUBE_API_KEY, OAUTH_CLIENT_ID } from '../config.js';
 import { Route, BrowserRouter, Link } from 'react-router-dom';
 import $ from 'jquery';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container, Row, Col, Button, Jumbotron } from 'react-bootstrap';
+// import './App.scss'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -126,7 +132,7 @@ class App extends Component {
         console.log('axios response user ID', data);
         this.setState({
           loginComplete: !this.loginComplete,
-          currentUser: response.profileObj.givenName,
+          currentUser: response.profileObj.givenName, //adding first name from the db as the current user
           currentId: data.user.id,
           userPlaylist,
           video: userPlaylist[0] || video,
@@ -207,6 +213,7 @@ class App extends Component {
       loginComplete,
       userPlaylist,
       code,
+      currentUser,
     } = this.state;
     //if hostParty is clicked, render the Party Page
     if (hostPartyClicked) {
@@ -219,11 +226,13 @@ class App extends Component {
           listClickHandler={this.listClickHandler}
           toggleHost={this.toggleHost}
           voteUpdate={this.voteUpdate}
+          currentUser={currentUser}
+
         />
       );
     }
     //If the login is not complete render the google auth again
-    if (!loginComplete) {
+    if (loginComplete) {
       return (
         <GoogleLogin
           clientId={OAUTH_CLIENT_ID}
@@ -236,23 +245,30 @@ class App extends Component {
     }
     //Renders the access code route and user sage upon login
     return (
-      <div>
-        <BrowserRouter>
-          <Link to={`/${this.makeID()}`}>
-            <button>GENERATE ACCESS CODE</button>
-          </Link>
-        </BrowserRouter>
-
-        <UserPage
-          clickHostParty={this.clickHostParty}
-          videos={videos}
-          searchHandler={this.searchHandler}
-          listClickHandler={this.listClickHandler}
-          userPlaylist={userPlaylist}
-          handleFormChange={this.handleFormChange}
-          code={code}
-        />
-      </div>
+      <Container style={{ display: "flex", justifyContent: 'center' }}>
+        <Row>
+          <Col>
+            <h1 style={{ color: "black", backgroundColor: "#ECEBEB", fontFamily: "fantasy", textalign: "center", fontSize: 65, fontWeight: 600, textAlign: "center", padding: "10px 20px" }}>
+              JUKE JAMS
+            </h1>
+            <h2 style={{ textAlign: "center", fontSize: 25 }}>BY {console.log(this.state.currentUser)}</h2>
+            <BrowserRouter>
+              <Link to={`/${this.makeID()}`}>
+                <Button>GENERATE ACCESS CODE</Button>
+              </Link>
+            </BrowserRouter>
+            <UserPage
+              clickHostParty={this.clickHostParty}
+              videos={videos}
+              searchHandler={this.searchHandler}
+              listClickHandler={this.listClickHandler}
+              userPlaylist={userPlaylist}
+              handleFormChange={this.handleFormChange}
+              code={code}
+            />
+          </Col>
+        </Row>
+      </Container>
       // User component:
       // Playlist component
       // button: HOST PARTY

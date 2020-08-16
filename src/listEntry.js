@@ -1,13 +1,14 @@
 import React from 'react';
+import Image from "react-bootstrap/Image"
 
 const ListEntry = ({ video, listClickHandler }) => {
   return (
     <div onClick={() => listClickHandler(video)}>
       <div>
-        <img src={video.snippet.thumbnails.default.url}></img>
+        <Image src={video.snippet.thumbnails.default.url} rounded></Image>
       </div>
       <div>
-        <div>{video.snippet.title}</div>
+        <div style={{ fontFamily: "monospace", fontWeight: "bolder", strokeWidth: ""}}>{video.snippet.title}</div>
         <div>{video.snippet.channelTitle}</div>
       </div>
     </div>

@@ -2,16 +2,21 @@ import React from 'react';
 import SearchResults from './searchResults.js';
 import Playlist from './playlist.js';
 import Search from './search.js';
-import { BrowserRouter, Link } from 'react-router-dom';
+import { Route, BrowserRouter, Link } from 'react-router-dom';
+
+import Button from 'react-bootstrap/Button';
 
 const UserPage = ({
   videos,
   clickHostParty,
+  clickJoinParty,
   searchHandler,
   listClickHandler,
   userPlaylist,
   code,
   handleFormChange,
+  handleFormSubmit,
+  currentUser
 }) => {
   let playlist;
   if (userPlaylist.length > 0) {
@@ -20,13 +25,18 @@ const UserPage = ({
 
   return (
     <div>
-      <h1>JUKE JAMS!</h1>
-      <div>User profile page</div>
-      <button onClick={() => clickHostParty()}>Host a Party</button>{' '}
+      {/* <h1 style={{ 
+        color: "black", backgroundColor: "#ECEBEB", fontFamily: "verdana", textalign: "center", fontSize: 65, fontWeight: 600, textAlign: "center", padding: "10px 20px"
+        }}>
+          JUKE JAMS
+      </h1>
+      <div>BY {currentUser || "error getting current user name"}</div> */}
+      <Button size="lg" onClick={() => clickHostParty()}>Host a Party!</Button>{' '}
       <form>
-        <label>
-          Enter Access Code:
+        <label style={{ fontWeight: "bold"}}>
+          Join a Party:
           <input
+            placeholder="Enter party code"
             type="text"
             name="code"
             onChange={(event) => handleFormChange(event)}
@@ -34,7 +44,7 @@ const UserPage = ({
         </label>
         <BrowserRouter>
           <Link to={`/${code}`}>
-            <button>Submit</button>
+            <Button>Submit</Button>
           </Link>
         </BrowserRouter>
       </form>
