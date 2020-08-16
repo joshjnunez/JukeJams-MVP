@@ -1,9 +1,8 @@
 require('dotenv').config();
-
 const Sequelize = require('sequelize');
+
 const { DB_NAME, DB_USER, DB_PASS, DB_HOST } = process.env;
 
-//Connection
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
   host: DB_HOST,
   dialect: 'mysql',
@@ -18,6 +17,7 @@ const User = sequelize.define('User', {
 		unique: true
 	},
 });
+
 
 const Song = sequelize.define('Song', {
   url: {
