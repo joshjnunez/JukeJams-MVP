@@ -12,6 +12,3 @@ Web compatibility
 Multi-user interface
 User-friendly navigation
 Search Engine Optimisation
-
-
-[JUKEJAMS logo]()

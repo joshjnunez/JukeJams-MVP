@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
 import UserPage from './userPage.js';
 import PartyPage from './partyPage.js';
+import QueueEntry from './queueEntry.js';
 import GoogleLogin from 'react-google-login';
-import axios from 'axios';
+import { } from './axiosRequests.js'
 import { YOUTUBE_API_KEY, OAUTH_CLIENT_ID } from '../config.js';
-import { Route, BrowserRouter, Link } from 'react-router-dom';
+import { getParty, putVotes, postHost, postLogin, getYouTube, postPlaylist } from './axiosRequests'
 import $ from 'jquery';
-
+import player from './youTubeScript.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Button, Jumbotron, OverlayTrigger, Popover } from 'react-bootstrap';
-// import './App.scss'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -21,13 +18,17 @@ class App extends Component {
       videos: [],
       video: {},
       hostPartyClicked: false,
+      joinPartyClicked: false,
       loginComplete: false,
       currentUser: '',
       currentId: '',
       userPlaylist: [],
+      partyPlaylist: [],
       redirect: false,
-      code: '',
       nextVideo: {},
+      accessCode: null,
+      nowPlaying: null,
+      votes: {}
     };
     this.clickHostParty = this.clickHostParty.bind(this);
     this.dropHostParty = this.dropHostParty.bind(this);
@@ -36,79 +37,112 @@ class App extends Component {
     this.toggleHost = this.toggleHost.bind(this);
     this.listClickHandler = this.listClickHandler.bind(this);
     this.handleFormChange = this.handleFormChange.bind(this);
-    this.makeID = this.makeID.bind(this);
+    this.clickJoinParty = this.clickJoinParty.bind(this);
+    this.voteUpdate = this.voteUpdate.bind(this);
+    this.refreshParty = this.refreshParty.bind(this);
   }
 
-  //Toggles the player
   componentDidMount() {
     $('#player').toggle();
   }
 
-  // Authorization: login
   handleFormChange(event) {
     return this.setState({
-      code: event.target.value,
+      accessCode: event.target.value,
     });
   }
 
-  //Creates our unique access codes
-  makeID() {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const charactersLength = characters.length;
-    for (let i = 0; i < 5; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
+  clickJoinParty() {
+    const { accessCode, votes } = this.state;
+    getParty(accessCode)
+      .then(({ data }) => {
+        let partyPlaylist = [];
+        partyPlaylist = data.map((item) => {
+          const { song } = item;
+          if (item.nowPlaying) {
+            this.setState({
+              nowPlaying: song
+            })
+          }
+          votes[song.url] = item.vote || 0
+          return {
+            snippet: {
+              thumbnails: { default: { url: song.thumbnail } },
+              title: song.title,
+              channelTitle: song.artist,
+            },
+            id: { videoId: song.url },
+          };
+        });
+        this.setState({ partyPlaylist, votes, joinPartyClicked: true });
+        this.refreshParty(true);
+      })
   }
 
-  //Host party click handler
   clickHostParty() {
-    $('#player').toggle();
-    player.playVideo();
-    this.setState({
-      hostPartyClicked: !this.hostPartyClicked,
-    });
-    this.toggleHost();
+    if (this.state.video.id) {
+      window.ytPlayer.loadVideoById(this.state.video.id.videoId)
+      $('#player').toggle();
+      window.ytPlayer.playVideo();
+      this.setState({
+        hostPartyClicked: !this.hostPartyClicked,
+        partyPlaylist: this.state.userPlaylist
+      });
+      this.toggleHost();
+      this.refreshParty(true);
+    }
   }
 
-  //Drop host party click handler
   dropHostParty() {
-    this.setState({
-      hostPartyClicked: false,
-    });
-    return (
-      <BrowserRouter>
-        <Route to="/"></Route>
-      </BrowserRouter>
-    );
+    this.refreshParty(false);
+    if (this.state.hostPartyClicked) {
+      $('#player').toggle();
+      window.ytPlayer.stopVideo();
+      this.setState({
+        hostPartyClicked: false,
+        nowPlaying: null
+      });
+      this.toggleHost();
+      putVotes({
+        url: null,
+        direction: null,
+        accessCode,
+        reset: true
+      })
+    } else {
+      this.setState({
+        joinPartyClicked: false,
+        nowPlaying: null
+      })
+    }
   }
 
-  //Axios post request to toggle host in db
   toggleHost() {
-    const { currentUser, hostPartyClicked } = this.state;
-    console.log('Here is the ID:', this.makeID());
+    const { currentId, hostPartyClicked } = this.state;
     if (!hostPartyClicked) {
-      axios.post('http://localhost:3000/host', {
+      postHost({
         host: true,
-        firstName: currentUser,
+        id: currentId,
+      })
+      .then(({ data }) => {
+        this.setState({
+          accessCode: data
+        });
       });
     } else {
       this.setState({
         hostPartyClicked: false,
+        accessCode: null
       });
-      axios.post('http://localhost:3000/host', {
+      postHost({
         host: false,
-        firstName: currentUser,
+        id: currentId,
       });
     }
   }
 
-
   responseGoogle(response) {
-      console.log(response.details)
-    axios
-      .post('http://localhost:3000/login', {
+      postLogin({
         firstName: response.profileObj.givenName,
         lastName: response.profileObj.familyName,
         host: false,
@@ -129,25 +163,48 @@ class App extends Component {
             };
           });
         }
-        console.log('axios response user ID', data);
         this.setState({
           loginComplete: !this.loginComplete,
-          currentUser: response.profileObj.givenName, //adding first name from the db as the current user
+          currentUser: response.profileObj.givenName,
           currentId: data.user.id,
           userPlaylist,
           video: userPlaylist[0] || video,
         });
-        // console.log(response, 'profile obj:', response.profileObj);
       });
+  }
+
+  refreshParty(bool) {
+    console.log('called refresh party with', bool)
+    const { votes } = this.state;
+    let refresh;
+    if (bool) {
+      refresh = setInterval(() => {
+        console.log('ran refresh')
+        if (window.accessCode) {
+          getParty(window.accessCode)
+          .then(({ data }) => {
+            data.forEach(item => {
+              const { song, vote, nowPlaying } = item
+              votes[song.url] = vote
+              if (nowPlaying) {
+                this.setState({ nowPlaying: song })
+              }
+            })
+            this.setState({ votes })
+          })
+        }
+      }, 5000)
+    } else {
+      console.log('cancelling refresh');
+      clearTimeout(refresh);
+    }
   }
 
   // YouTube Search Helper Function
   searchHandler(e) {
     const { searchTerm } = this.state;
     if (e === 'click' && searchTerm.length) {
-      console.log('searched', searchTerm);
-      axios
-        .get('https://www.googleapis.com/youtube/v3/search', {
+      getYouTube({
           params: {
             key: YOUTUBE_API_KEY,
             q: searchTerm,
@@ -158,7 +215,6 @@ class App extends Component {
           },
         })
         .then(({ data }) => {
-          console.log(data.items);
           this.setState({
             videos: data.items,
             // video: data.items[0],
@@ -176,20 +232,16 @@ class App extends Component {
   // Handles Clicks on YouTube Search Results
   listClickHandler(video) {
     const { hostPartyClicked, currentId, userPlaylist } = this.state;
-    console.log('clicked list item', video);
-
     if (hostPartyClicked) {
       this.setState({ video });
-      player.loadVideoById(video.id.videoId);
-      // player.stopVideo();
+      window.ytPlayer.loadVideoById(video.id.videoId);
     } else {
-      axios
-        .post(`http://localhost:3000/playlist/${currentId}`, {
+        postPlaylist({
           url: video.id.videoId,
           title: video.snippet.title,
           artist: video.snippet.channelTitle,
           thumbnail: video.snippet.thumbnails.default.url,
-        })
+        }, currentId)
         .then(({ data }) => {
           if (data === false) {
             // If song doesn't already exist in database
@@ -197,42 +249,71 @@ class App extends Component {
               userPlaylist: userPlaylist.concat([video]),
               video: userPlaylist[0],
             });
-            player.loadVideoById(this.state.video.id.videoId);
-            player.stopVideo();
           }
         })
         .catch((err) => console.log(err));
     }
   }
 
+  voteUpdate(video, direction) {
+    const { currentId, accessCode, votes } = this.state;
+    // this.setState({
+    //   voteClicked: true
+    // })
+    putVotes({
+      userId: currentId,
+      url: video.id.videoId,
+      direction,
+      accessCode
+    })
+    .then(({ data }) => {
+      // setVoteCount(data.newVoteCount || 0);
+      votes[video.id.videoId] = data.newVoteCount || 0
+      this.setState({
+        votes
+      })
+    });
+  }
+
+  // sortPlaylist() {
+  //   const { userPlaylist } = this.state;
+  //   this.setState({
+  //     userPlaylist: userPlaylist.sort()
+  //   });
+  // }
+
   render() {
     const {
       videos,
       hostPartyClicked,
+      joinPartyClicked,
       video,
       loginComplete,
       userPlaylist,
-      code,
+      accessCode,
       currentUser,
+      currentId,
+      nowPlaying,
+      partyPlaylist,
+      votes
     } = this.state;
-    //if hostParty is clicked, render the Party Page
-    if (hostPartyClicked) {
+    window.accessCode = accessCode;
+    if (hostPartyClicked || joinPartyClicked) {
       return (
         <PartyPage
           video={video}
-          userPlaylist={userPlaylist}
+          partyPlaylist={partyPlaylist}
           hostPartyClicked={hostPartyClicked}
           dropHostParty={this.dropHostParty}
           listClickHandler={this.listClickHandler}
           toggleHost={this.toggleHost}
           voteUpdate={this.voteUpdate}
-          currentUser={currentUser}
-
+          nowPlaying={nowPlaying}
+          votes={votes}
         />
       );
     }
-    //If the login is not complete render the google auth again
-    if (loginComplete) {
+    if (!loginComplete) {
       return (
         <GoogleLogin
           clientId={OAUTH_CLIENT_ID}
@@ -243,42 +324,24 @@ class App extends Component {
         />
       );
     }
-    //Renders the access code route and user sage upon login
-    //move title and user name from user page to render so generate access code button isnt floating outside of container
     return (
-      <Container style={{ display: "flex", justifyContent: 'center', border: "8px solid #cecece" }}>
-        <Row style={{ padding: "5px" }}>
-          <Col>
-            <h1 style={{ color: "black", backgroundColor: "#ECEBEB", fontFamily: "fantasy", textalign: "center", fontSize: 75, fontWeight: 600, textAlign: "center", padding: "30px 20px" }}>
-              JUKE JAMS
-            </h1>
-            <h2 style={{ textAlign: "center", fontSize: 25 }}>BY {currentUser}</h2>
-            <BrowserRouter>
-              <Link to={`/${this.makeID()}`}>
-                <Button style={{ fontWeight: "bold" }}>GENERATE ACCESS CODE</Button>
-              </Link>
-            </BrowserRouter>
-            <UserPage
-              clickHostParty={this.clickHostParty}
-              videos={videos}
-              searchHandler={this.searchHandler}
-              listClickHandler={this.listClickHandler}
-              userPlaylist={userPlaylist}
-              handleFormChange={this.handleFormChange}
-              code={code}
-            />
-          </Col>
-        </Row>
-      </Container>
-      // User component:
-      // Playlist component
-      // button: HOST PARTY
-      // input: ACCESS CODE
-      // Search component
-
-      // Party component:
-      // VideoPlayer component
-      // Queue component (include votes)
+  <Container style={{ display: "flex", justifyContent: 'center', border: "8px solid #cecece" }}>
+    <Row style={{ padding: "5px" }}>
+      <Col>
+          <UserPage
+            clickHostParty={this.clickHostParty}
+            clickJoinParty={this.clickJoinParty}
+            videos={videos}
+            searchHandler={this.searchHandler}
+            listClickHandler={this.listClickHandler}
+            userPlaylist={userPlaylist}
+            handleFormChange={this.handleFormChange}
+            accessCode={accessCode}
+            currentUser={currentUser}
+          />
+      </Col>
+    </Row>
+  </Container>
     );
   }
 }

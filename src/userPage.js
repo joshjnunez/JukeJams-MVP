@@ -2,8 +2,6 @@ import React from 'react';
 import SearchResults from './searchResults.js';
 import Playlist from './playlist.js';
 import Search from './search.js';
-import { Route, BrowserRouter, Link } from 'react-router-dom';
-
 import Button from 'react-bootstrap/Button';
 
 const UserPage = ({
@@ -13,7 +11,6 @@ const UserPage = ({
   searchHandler,
   listClickHandler,
   userPlaylist,
-  code,
   handleFormChange,
   handleFormSubmit,
   currentUser
@@ -25,28 +22,24 @@ const UserPage = ({
 
   return (
     <div>
-      {/* <h1 style={{ 
-        color: "black", backgroundColor: "#ECEBEB", fontFamily: "verdana", textalign: "center", fontSize: 65, fontWeight: 600, textAlign: "center", padding: "10px 20px"
-        }}>
-          JUKE JAMS
+      <h1 style={{ color: "black", backgroundColor: "#ECEBEB", fontFamily: 'Alfa Slab One', textalign: "center", fontSize: 75, fontWeight: 600, textAlign: "center", padding: "30px 20px" }}>
+        JUKE JAMS!
       </h1>
-      <div>BY {currentUser || "error getting current user name"}</div> */}
-      <Button size="lg" onClick={() => clickHostParty()}>Host a Party!</Button>{' '}
+      <div>
+      <h2 style={{ textAlign: "center", fontSize: 25, fontFamily: "verdana", color: "black"}}>
+    {`Welcome, ${currentUser.split(' ')[0]}!`}</h2>
+    </div>
+    <Button size="lg" onClick={() => clickHostParty()}>Host a Party!</Button>{' '}
       <form>
-        <label style={{ fontWeight: "bold"}}>
-          Join a Party:
+        <label>
+          Enter Access Code:
           <input
-            placeholder="Enter party code"
             type="text"
             name="code"
             onChange={(event) => handleFormChange(event)}
           />
         </label>
-        <BrowserRouter>
-          <Link to={`/${code}`}>
-            <Button>Submit</Button>
-          </Link>
-        </BrowserRouter>
+          <Button onClick={clickJoinParty}>Submit</Button>
       </form>
       <Search searchHandler={searchHandler} />
       <SearchResults
